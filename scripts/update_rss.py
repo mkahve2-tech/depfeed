@@ -34,4 +34,40 @@ def parse_items(html: str):
         ptype = type_el.get_text(" ", strip=True) if type_el else ""
 
         pub_date = datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT")
-        description = (f"{period} | {ptype
+        description = (period + " | " + ptype).strip(" |")
+
+        item_xml = (
+            "<item>\n"
+            f"  <title>{title}</title>\n"
+            f"  <link>{link}</link>\n"
+            f"  <description>{description}</description>\n"
+            f"  <pubDate>{pub_date}</pubDate>\n"
+            f"  <guid>{link}</guid>\n"
+            "</item>"
+        )
+        items.append(item_xml)
+    return items
+
+def build_rss(items):
+    channel = (
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        "<rss version=\"2.0\">\n"
+        "  <channel>\n"
+        "    <title>Archaeology - University of Helsinki</title>\n"
+        f"    <link>{URL}</link>\n"
+        "    <description>Auto-updated feed (University of Helsinki Archaeology projects)</description>\n"
+        "    " + "\n".join(items) + "\n"
+        "  </channel>\n"
+        "</rss>\n"
+    )
+    return channel
+
+def main():
+    html = fetch_html(URL)
+    items = parse_items(html)
+    rss_xml = build_rss(items)
+    with open("rss.xml", "w", encoding="utf-8") as f:
+        f.write(rss_xml)
+
+if __name__ == "__main__":
+    main()
